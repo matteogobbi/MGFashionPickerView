@@ -8,15 +8,65 @@
 
 #import "MGFashionPickerView.h"
 
-#define kMGPickerViewSelectionColor [UIColor blueColor];
+#define kMGPickerViewDefaultTextColor [UIColor blackColor]
+#define kMGPickerViewSelectionTextColor [UIColor blueColor]
 
-static const CGFloat kMGPickerViewRowWidth = 80.0;
+static const CGFloat kMGPickerViewItemWidth = 80.0;
 static const CGFloat kMGPickerViewComponentHeight = 40.0;
 static const CGFloat kMGPickerViewComponentTitleHeight = 25.0;
 static const CGFloat kMGPickerComponentMargin = 20.0;
 
 static const CGFloat kMGPickerViewTitleFontSize = 15.0;
-static NSString *const kMGPickerViewTitleFontName = @"Helevetica-Nueue";
+static NSString *const kMGPickerViewTitleFontName = @"HelveticaNeue";
+
+static const CGFloat kMGPickerViewCollectionTextFontSize = 16.0;
+static NSString *const kMGPickerViewCollectionTextFontName = @"HelveticaNeue-Bold";
+
+static NSString *const kMGPickerViewCollectionCellIdentifier = @"CollectionCell";
+
+
+#pragma mark - MGFashionPickerViewCell class
+@interface MGFashionPickerViewCell ()
+
+@property (strong, nonatomic) UILabel *label;
+
+@end
+
+@implementation MGFashionPickerViewCell
+
+- (instancetype)init
+{
+    self = [super init];
+    if (self) {
+    }
+    return self;
+}
+
+- (instancetype)initWithFrame:(CGRect)frame
+{
+    self = [super initWithFrame:frame];
+    if (self) {
+        [self mg_initialize];
+    }
+    return self;
+}
+
+- (void)mg_initialize
+{
+    _label = [[UILabel alloc] initWithFrame:(CGRect){0, 0, self.frame.size.width, self.frame.size.height}];
+    _label.font = [UIFont fontWithName:kMGPickerViewCollectionTextFontName size:kMGPickerViewCollectionTextFontSize];
+    _label.textColor = kMGPickerViewDefaultTextColor;
+    _label.textAlignment = NSTextAlignmentCenter;
+    [self addSubview:_label];
+}
+
+@end
+
+
+#pragma mark - MGFashionPickerView class
+@interface MGFashionPickerView () <UICollectionViewDataSource, UICollectionViewDelegate>
+
+@end
 
 @implementation MGFashionPickerView {
     BOOL considerComponentTitles_;
@@ -25,12 +75,17 @@ static NSString *const kMGPickerViewTitleFontName = @"Helevetica-Nueue";
     NSMutableArray *arrayComponentCollectionView_;
     
     NSUInteger numberOfComponent_;
-    NSMutableArray *arrayComponentNumberOfRows_;
+    NSMutableArray *arrayComponentNumberOfItems_;
     NSMutableArray *arrayComponentHeights_;
-    NSMutableArray *arrayComponentRowsWidth_;
+    NSMutableArray *arrayComponentItemsWidth_;
     NSMutableArray *arrayComponentTitles_;
     UIColor *selectionColor_;
 }
+
+
+/////////////////////////////////////////////////////
+//           ASPECT AND MAIN FUNCTIONS             //
+/////////////////////////////////////////////////////
 
 #pragma mark - Class and overriding methods
 - (instancetype)initWithFrame:(CGRect)frame
@@ -40,14 +95,6 @@ static NSString *const kMGPickerViewTitleFontName = @"Helevetica-Nueue";
         [self mg_setDefaultValue];
     }
     return self;
-}
-
-- (void)layoutSubviews
-{
-    static dispatch_once_t onceToken;
-    dispatch_once(&onceToken, ^{
-        [self mg_constructPicker];
-    });
 }
 
 #pragma mark - Private methods
@@ -61,10 +108,10 @@ static NSString *const kMGPickerViewTitleFontName = @"Helevetica-Nueue";
     //Get the number of components
     numberOfComponent_ = [self.datasource numberOfComponentsForPickerView:self];
     
-    //Init the rows array and get the number of rows for each component
-    arrayComponentNumberOfRows_ = [NSMutableArray arrayWithCapacity:numberOfComponent_];
+    //Init the Items array and get the number of Items for each component
+    arrayComponentNumberOfItems_ = [NSMutableArray arrayWithCapacity:numberOfComponent_];
     for (NSUInteger i = 0; i < numberOfComponent_; i++) {
-        arrayComponentNumberOfRows_[i] = @([self.datasource pickerView:self numberOfRowsForComponent:i]);
+        arrayComponentNumberOfItems_[i] = @([self.datasource pickerView:self numberOfItemsForComponent:i]);
     }
     
     //Get the height of the component if is implemented the method
@@ -79,15 +126,15 @@ static NSString *const kMGPickerViewTitleFontName = @"Helevetica-Nueue";
         }
     }
     
-    //Get the width of rows in component if is implemented the method
-    arrayComponentRowsWidth_ = [NSMutableArray arrayWithCapacity:numberOfComponent_];
-    if ([self.datasource respondsToSelector:@selector(pickerView:rowsWidthForComponent:)]) {
+    //Get the width of Items in component if is implemented the method
+    arrayComponentItemsWidth_ = [NSMutableArray arrayWithCapacity:numberOfComponent_];
+    if ([self.datasource respondsToSelector:@selector(pickerView:ItemsWidthForComponent:)]) {
         for (NSUInteger i = 0; i < numberOfComponent_; i++) {
-            arrayComponentRowsWidth_[i] = @([self.datasource pickerView:self rowsWidthForComponent:i]);
+            arrayComponentItemsWidth_[i] = @([self.datasource pickerView:self ItemsWidthForComponent:i]);
         }
     } else {
         for (NSUInteger i = 0; i < numberOfComponent_; i++) {
-            arrayComponentRowsWidth_[i] = @(kMGPickerViewRowWidth);
+            arrayComponentItemsWidth_[i] = @(kMGPickerViewItemWidth);
         }
     }
     
@@ -103,7 +150,7 @@ static NSString *const kMGPickerViewTitleFontName = @"Helevetica-Nueue";
     if ([self.datasource respondsToSelector:@selector(selectionColorForPickerView:)]) {
         selectionColor_ = [self.datasource selectionColorForPickerView:self];
     } else {
-        selectionColor_ = kMGPickerViewSelectionColor;
+        selectionColor_ = kMGPickerViewSelectionTextColor;
     }
 }
 
@@ -120,6 +167,8 @@ static NSString *const kMGPickerViewTitleFontName = @"Helevetica-Nueue";
     
     //Get all datas from the datasource before constructing the view
     [self mg_loadData];
+    
+    arrayComponentCollectionView_ = [NSMutableArray arrayWithCapacity:numberOfComponent_];
     
     //Construct the view
     CGFloat actualContentSizeHeight = 0.0;
@@ -145,7 +194,7 @@ static NSString *const kMGPickerViewTitleFontName = @"Helevetica-Nueue";
     //Consider the title if exists
     if (considerComponentTitles_) {
         UILabel *label = [[UILabel alloc] initWithFrame:(CGRect){0, 0, componentView.frame.size.width, kMGPickerViewComponentTitleHeight}];
-        [self mg_configureDefaultLabel:label];
+        [self mg_configureDefaultTitleLabel:label];
         label.text = arrayComponentTitles_[component];
         [componentView addSubview:label];
         
@@ -158,12 +207,15 @@ static NSString *const kMGPickerViewTitleFontName = @"Helevetica-Nueue";
     //Create the collectionView
     CGRect collectionViewRect = (CGRect){0.0, componentViewHeight, componentView.frame.size.width, componentHeight};
     
-    UIView *collectionView = [[UIView alloc] initWithFrame:collectionViewRect];
-    collectionView.backgroundColor = [UIColor redColor];
+    UICollectionViewFlowLayout *layout=[[UICollectionViewFlowLayout alloc] init];
+    layout.scrollDirection = UICollectionViewScrollDirectionHorizontal;
+    
+    UICollectionView *collectionView = [[UICollectionView alloc] initWithFrame:collectionViewRect collectionViewLayout:layout];
+    [arrayComponentCollectionView_ addObject:collectionView];
+    [self mg_configureDefaultCollectionView:collectionView];
+    
     [componentView addSubview:collectionView];
     componentViewHeight += collectionView.frame.size.height;
-    
-    [arrayComponentCollectionView_ addObject:collectionView];
     
     //Set the frame of the componentView
     componentView.frame = (CGRect){0, 0, componentView.frame.size.width, componentViewHeight};
@@ -176,18 +228,30 @@ static NSString *const kMGPickerViewTitleFontName = @"Helevetica-Nueue";
     scrollView_.bounces = NO;
 }
 
-- (void)mg_configureDefaultLabel:(UILabel *)label
+- (void)mg_configureDefaultTitleLabel:(UILabel *)label
 {
     label.font = [UIFont fontWithName:kMGPickerViewTitleFontName size:kMGPickerViewTitleFontSize];
     label.textColor = selectionColor_;
     label.textAlignment = NSTextAlignmentCenter;
 }
 
+- (void)mg_configureDefaultCollectionView:(UICollectionView *)collectionView
+{
+    collectionView.backgroundColor = [UIColor clearColor];
+    collectionView.showsVerticalScrollIndicator = NO;
+    collectionView.showsHorizontalScrollIndicator = NO;
+    
+    collectionView.delegate = self;
+    collectionView.dataSource = self;
+    [collectionView registerClass:[MGFashionPickerViewCell class] forCellWithReuseIdentifier:kMGPickerViewCollectionCellIdentifier];
+}
+
 #pragma mark - Public methods
 - (void)reloadData
 {
+#warning - To review
     [self mg_resetData];
-    [self mg_loadData];
+    [self mg_constructPicker];
 }
 
 - (UIScrollView *)mainVerticalScrollView
@@ -195,6 +259,40 @@ static NSString *const kMGPickerViewTitleFontName = @"Helevetica-Nueue";
     return scrollView_;
 }
 
-#warning - Implement backgroundColor, selectionColor
+#warning - Implement backgroundColor, selectionColor, textColor (use a component object including title and collectionView)
+
+
+/////////////////////////////////////////////////////
+//      COLLECTION VIEW DELEGATE/DATASOURCE        //
+/////////////////////////////////////////////////////
+
+#pragma mark - UICollectionView Delegate/Datasource
+- (NSInteger)numberOfSectionsInCollectionView:(UICollectionView *)collectionView
+{
+    return 1;
+}
+
+- (NSInteger)collectionView:(UICollectionView *)collectionView numberOfItemsInSection:(NSInteger)section
+{
+    NSUInteger component = [arrayComponentCollectionView_ indexOfObject:collectionView];
+    return [arrayComponentNumberOfItems_[component] integerValue];;
+}
+
+- (CGSize)collectionView:(UICollectionView *)collectionView layout:(UICollectionViewLayout*)collectionViewLayout sizeForItemAtIndexPath:(NSIndexPath *)indexPath
+{
+    NSUInteger component = [arrayComponentCollectionView_ indexOfObject:collectionView];
+    return CGSizeMake([arrayComponentItemsWidth_[component] floatValue], [arrayComponentHeights_[component] floatValue]);
+}
+
+- (UICollectionViewCell *)collectionView:(UICollectionView *)collectionView cellForItemAtIndexPath:(NSIndexPath *)indexPath
+{
+    NSUInteger component = [arrayComponentCollectionView_ indexOfObject:collectionView];
+    
+    MGFashionPickerViewCell *collectionViewCell = [collectionView dequeueReusableCellWithReuseIdentifier:kMGPickerViewCollectionCellIdentifier forIndexPath:indexPath];
+    
+    collectionViewCell.label.text = [self.datasource pickerView:self textForItem:indexPath.row forComponent:component];
+    
+    return collectionViewCell;
+}
 
 @end

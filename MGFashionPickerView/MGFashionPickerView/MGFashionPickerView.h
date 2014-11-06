@@ -10,6 +10,13 @@
 
 @class MGFashionPickerView;
 
+#pragma mark - MGFashionPickerViewCell class
+@interface MGFashionPickerViewCell : UICollectionViewCell
+
+@property (strong, nonatomic, readonly) UILabel *label;
+
+@end
+
 #pragma mark - Delegate protocol
 @protocol MGFashionPickerViewDelegate <NSObject>
 
@@ -20,16 +27,16 @@
 
 @required
 - (NSUInteger)numberOfComponentsForPickerView:(MGFashionPickerView *)pickerView;
-- (NSUInteger)pickerView:(MGFashionPickerView *)pickerView numberOfRowsForComponent:(NSUInteger)component;
-- (NSString *)pickerView:(MGFashionPickerView *)pickerView textForRow:(NSInteger)row forComponent:(NSInteger)component;
+- (NSUInteger)pickerView:(MGFashionPickerView *)pickerView numberOfItemsForComponent:(NSUInteger)component;
+- (NSString *)pickerView:(MGFashionPickerView *)pickerView textForItem:(NSInteger)Item forComponent:(NSInteger)component;
 
 @optional
 - (NSString *)pickerView:(MGFashionPickerView *)pickerView titleForComponent:(NSUInteger)component;
-- (CGFloat)pickerView:(MGFashionPickerView *)pickerView rowsWidthForComponent:(NSInteger)component;
+- (CGFloat)pickerView:(MGFashionPickerView *)pickerView ItemsWidthForComponent:(NSInteger)component;
 - (CGFloat)pickerView:(MGFashionPickerView *)pickerView heightForComponent:(NSInteger)component;
 - (UIColor *)selectionColorForPickerView:(MGFashionPickerView *)pickerView;
 
-- (UIView *)pickerView:(MGFashionPickerView *)pickerView viewForRow:(NSInteger)row forComponent:(NSInteger)component __attribute__((unavailable));
+- (UIView *)pickerView:(MGFashionPickerView *)pickerView viewForItem:(NSInteger)Item forComponent:(NSInteger)component __attribute__((unavailable));
 
 @end
 
