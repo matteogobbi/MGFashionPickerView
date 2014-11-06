@@ -20,6 +20,11 @@
 #pragma mark - Delegate protocol
 @protocol MGFashionPickerViewDelegate <NSObject>
 
+@optional
+- (void)pickerView:(MGFashionPickerView *)pickerView componentDidEndDragging:(NSUInteger)component willDecelerate:(BOOL)decelerate;
+- (void)pickerView:(MGFashionPickerView *)pickerView componentWillBeginDragging:(NSUInteger)component;
+- (void)pickerView:(MGFashionPickerView *)pickerView didSelectItem:(NSUInteger)item forComponent:(NSUInteger)component;
+
 @end
 
 #pragma mark - Datasource protocol
@@ -28,15 +33,15 @@
 @required
 - (NSUInteger)numberOfComponentsForPickerView:(MGFashionPickerView *)pickerView;
 - (NSUInteger)pickerView:(MGFashionPickerView *)pickerView numberOfItemsForComponent:(NSUInteger)component;
-- (NSString *)pickerView:(MGFashionPickerView *)pickerView textForItem:(NSInteger)Item forComponent:(NSInteger)component;
+- (NSString *)pickerView:(MGFashionPickerView *)pickerView textForItem:(NSInteger)item forComponent:(NSInteger)component;
 
 @optional
 - (NSString *)pickerView:(MGFashionPickerView *)pickerView titleForComponent:(NSUInteger)component;
-- (CGFloat)pickerView:(MGFashionPickerView *)pickerView ItemsWidthForComponent:(NSInteger)component;
+- (CGFloat)pickerView:(MGFashionPickerView *)pickerView itemsWidthForComponent:(NSInteger)component;
 - (CGFloat)pickerView:(MGFashionPickerView *)pickerView heightForComponent:(NSInteger)component;
 - (UIColor *)selectionColorForPickerView:(MGFashionPickerView *)pickerView;
 
-- (UIView *)pickerView:(MGFashionPickerView *)pickerView viewForItem:(NSInteger)Item forComponent:(NSInteger)component __attribute__((unavailable));
+- (UIView *)pickerView:(MGFashionPickerView *)pickerView viewForItem:(NSInteger *)item forComponent:(NSInteger)component __attribute__((unavailable));
 
 @end
 
