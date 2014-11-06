@@ -15,7 +15,7 @@ static const CGFloat kMGPickerViewComponentHeight = 40.0;
 static const CGFloat kMGPickerViewComponentTitleHeight = 25.0;
 static const CGFloat kMGPickerComponentMargin = 20.0;
 
-static const CGFloat kMGPickerViewTitleFontSize = 16.0;
+static const CGFloat kMGPickerViewTitleFontSize = 15.0;
 static NSString *const kMGPickerViewTitleFontName = @"Helevetica-Nueue";
 
 @implementation MGFashionPickerView {
@@ -38,9 +38,16 @@ static NSString *const kMGPickerViewTitleFontName = @"Helevetica-Nueue";
     self = [super initWithFrame:frame];
     if (self) {
         [self mg_setDefaultValue];
-        [self mg_constructPicker];
     }
     return self;
+}
+
+- (void)layoutSubviews
+{
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        [self mg_constructPicker];
+    });
 }
 
 #pragma mark - Private methods
@@ -86,6 +93,7 @@ static NSString *const kMGPickerViewTitleFontName = @"Helevetica-Nueue";
     
     //Get title for components if is implemented the method
     if ((considerComponentTitles_ = [self.datasource respondsToSelector:@selector(pickerView:titleForComponent:)])) {
+        arrayComponentTitles_ = [NSMutableArray arrayWithCapacity:numberOfComponent_];
         for (NSUInteger i = 0; i < numberOfComponent_; i++) {
             arrayComponentTitles_[i] = [self.datasource pickerView:self titleForComponent:i];
         }
@@ -139,6 +147,7 @@ static NSString *const kMGPickerViewTitleFontName = @"Helevetica-Nueue";
         UILabel *label = [[UILabel alloc] initWithFrame:(CGRect){0, 0, componentView.frame.size.width, kMGPickerViewComponentTitleHeight}];
         [self mg_configureDefaultLabel:label];
         label.text = arrayComponentTitles_[component];
+        [componentView addSubview:label];
         
         componentViewHeight += label.frame.size.height;
     }
@@ -149,7 +158,8 @@ static NSString *const kMGPickerViewTitleFontName = @"Helevetica-Nueue";
     //Create the collectionView
     CGRect collectionViewRect = (CGRect){0.0, componentViewHeight, componentView.frame.size.width, componentHeight};
     
-    UICollectionView *collectionView = [[UICollectionView alloc] initWithFrame:collectionViewRect];
+    UIView *collectionView = [[UIView alloc] initWithFrame:collectionViewRect];
+    collectionView.backgroundColor = [UIColor redColor];
     [componentView addSubview:collectionView];
     componentViewHeight += collectionView.frame.size.height;
     
@@ -163,13 +173,14 @@ static NSString *const kMGPickerViewTitleFontName = @"Helevetica-Nueue";
 
 - (void)mg_configureMainScrollView
 {
-#warning - To implement
+    scrollView_.bounces = NO;
 }
 
 - (void)mg_configureDefaultLabel:(UILabel *)label
 {
     label.font = [UIFont fontWithName:kMGPickerViewTitleFontName size:kMGPickerViewTitleFontSize];
     label.textColor = selectionColor_;
+    label.textAlignment = NSTextAlignmentCenter;
 }
 
 #pragma mark - Public methods
@@ -177,6 +188,11 @@ static NSString *const kMGPickerViewTitleFontName = @"Helevetica-Nueue";
 {
     [self mg_resetData];
     [self mg_loadData];
+}
+
+- (UIScrollView *)mainVerticalScrollView
+{
+    return scrollView_;
 }
 
 #warning - Implement backgroundColor, selectionColor

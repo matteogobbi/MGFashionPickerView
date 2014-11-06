@@ -39,6 +39,8 @@
 @property (weak, nonatomic) id<MGFashionPickerViewDelegate> delegate;
 @property (weak, nonatomic) id<MGFashionPickerViewDatasource> datasource;
 
+@property (weak, nonatomic, readonly) UIScrollView *mainVerticalScrollView;
+
 - (instancetype)init __attribute__((unavailable("Use -initWithFrame: instead")));
 
 - (void)reloadData;
