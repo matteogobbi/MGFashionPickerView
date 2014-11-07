@@ -17,6 +17,11 @@
 
 @end
 
+#pragma mark - MGFashionPickerComponent class
+@interface MGFashionPickerComponent : NSObject
+
+@end
+
 #pragma mark - Delegate protocol
 @protocol MGFashionPickerViewDelegate <NSObject>
 

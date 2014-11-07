@@ -62,6 +62,14 @@ static NSString *const kMGPickerViewCollectionCellIdentifier = @"CollectionCell"
 
 @end
 
+#pragma mark - MGFashionPickerComponent class
+@interface MGFashionPickerComponent ()
+
+@end
+
+@implementation MGFashionPickerComponent
+
+@end
 
 #pragma mark - MGFashionPickerView class
 @interface MGFashionPickerView () <UICollectionViewDataSource, UICollectionViewDelegate>
@@ -250,6 +258,12 @@ static NSString *const kMGPickerViewCollectionCellIdentifier = @"CollectionCell"
     collectionView.showsVerticalScrollIndicator = NO;
     collectionView.showsHorizontalScrollIndicator = NO;
     
+    NSUInteger component = [arrayComponentCollectionView_ indexOfObject:collectionView];
+    CGFloat itemWidth = [arrayComponentItemsWidth_[component] floatValue];
+    CGFloat sideInset = self.bounds.size.width/2.0-itemWidth/2.0;
+    
+    collectionView.contentInset = (UIEdgeInsets){0, sideInset, 0, sideInset};
+    
     collectionView.delegate = self;
     collectionView.dataSource = self;
     [collectionView registerClass:[MGFashionPickerViewCell class] forCellWithReuseIdentifier:kMGPickerViewCollectionCellIdentifier];
@@ -329,6 +343,9 @@ static NSString *const kMGPickerViewCollectionCellIdentifier = @"CollectionCell"
     //[self mg_centerValueForScrollView:scrollView];
 }
 
+
+
+
 #pragma mark - Private methods scrollView selection
 //Center the value in the bar selector
 - (void)mg_centerValueForScrollView:(UIScrollView *)scrollView {
@@ -376,7 +393,6 @@ static NSString *const kMGPickerViewCollectionCellIdentifier = @"CollectionCell"
     
     MGFashionPickerViewCell *collectionCell = (MGFashionPickerViewCell *)[collectionView cellForItemAtIndexPath:[NSIndexPath indexPathForItem:itemIndex inSection:0]];
     collectionCell.label.textColor = selectionColor_;
-    
 }
 
 @end
