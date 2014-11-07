@@ -17,8 +17,21 @@
 
 @end
 
-#pragma mark - MGFashionPickerComponent class
-@interface MGFashionPickerComponent : NSObject
+
+#pragma mark - MGFashionPickerComponentView Delegate protocol
+@protocol MGFashionPickerComponentViewDelegate <NSObject>
+
+@optional
+- (void)pickerComponentView:(MGFashionPickerView *)componentView didSelectItem:(NSUInteger)item;
+
+@end
+
+
+@interface MGFashionPickerComponentView : UIView
+
+@property (readonly) NSUInteger selectedItemIndex;
+
+@property (weak, nonatomic) id<MGFashionPickerComponentViewDelegate> delegate;
 
 @end
 
@@ -26,8 +39,6 @@
 @protocol MGFashionPickerViewDelegate <NSObject>
 
 @optional
-- (void)pickerView:(MGFashionPickerView *)pickerView componentDidEndDragging:(NSUInteger)component willDecelerate:(BOOL)decelerate;
-- (void)pickerView:(MGFashionPickerView *)pickerView componentWillBeginDragging:(NSUInteger)component;
 - (void)pickerView:(MGFashionPickerView *)pickerView didSelectItem:(NSUInteger)item forComponent:(NSUInteger)component;
 
 @end
