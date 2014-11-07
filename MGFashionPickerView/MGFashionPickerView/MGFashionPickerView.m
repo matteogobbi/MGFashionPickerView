@@ -20,7 +20,8 @@ static const CGFloat kMGPickerViewTitleFontSize = 14.0;
 static NSString *const kMGPickerViewTitleFontName = @"HelveticaNeue";
 
 static const CGFloat kMGPickerViewCollectionTextFontSize = 17.0;
-static NSString *const kMGPickerViewCollectionTextFontName = @"HelveticaNeue-Bold";
+static NSString *const kMGPickerViewCollectionTextFontName = @"HelveticaNeue";
+static NSString *const kMGPickerViewCollectionSelectedTextFontName = @"HelveticaNeue-Bold";
 
 static NSString *const kMGPickerViewCollectionCellIdentifier = @"CollectionCell";
 
@@ -169,6 +170,7 @@ static UIColor *selectionColor;
 {
     MGFashionPickerViewCell *collectionViewCell = [collectionView dequeueReusableCellWithReuseIdentifier:kMGPickerViewCollectionCellIdentifier forIndexPath:indexPath];
     collectionViewCell.label.text = _itemsText[indexPath.row];
+    collectionViewCell.label.font = [UIFont fontWithName:((indexPath.row == _selectedItemIndex) ? kMGPickerViewCollectionSelectedTextFontName : kMGPickerViewCollectionTextFontName) size:kMGPickerViewCollectionTextFontSize];
     collectionViewCell.label.textColor = (indexPath.row == _selectedItemIndex) ? selectionColor : kMGPickerViewDefaultTextColor;
     
     return collectionViewCell;
