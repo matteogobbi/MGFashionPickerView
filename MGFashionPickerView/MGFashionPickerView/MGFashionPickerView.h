@@ -8,7 +8,7 @@
 
 #import <UIKit/UIKit.h>
 
-@class MGFashionPickerView;
+@class MGFashionPickerView, MGFashionPickerComponentView;
 
 #pragma mark - MGFashionPickerViewCell class
 @interface MGFashionPickerViewCell : UICollectionViewCell
@@ -22,7 +22,7 @@
 @protocol MGFashionPickerComponentViewDelegate <NSObject>
 
 @optional
-- (void)pickerComponentView:(MGFashionPickerView *)componentView didSelectItem:(NSUInteger)item;
+- (void)pickerComponentView:(MGFashionPickerComponentView *)componentView didSelectItem:(NSUInteger)item;
 
 @end
 

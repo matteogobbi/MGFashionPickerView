@@ -219,6 +219,10 @@ static UIColor *selectionColor;
     [CATransaction setCompletionBlock:^{
         //Highlight the cell
         [self mg_highlightItemAtIndex:itemIndex];
+        
+        if ([self.delegate respondsToSelector:@selector(pickerComponentView:didSelectItem:)]) {
+            [self.delegate pickerComponentView:self didSelectItem:itemIndex];
+        }
     }];
     
     [scrollView setContentOffset:CGPointMake(newOffset, 0.0) animated:YES];
@@ -226,25 +230,19 @@ static UIColor *selectionColor;
     [CATransaction commit];
 }
 
-//Dehighlight the last cell
-- (void)mg_dehighlightLastCell {
-    
-}
-
-//Highlight a cell
+//Highlight a cell (dehiglighting the last one as well)
 - (void)mg_highlightItemAtIndex:(NSUInteger)itemIndex {
     NSUInteger oldSelected = _selectedItemIndex;
     _selectedItemIndex = itemIndex;
     
     [_collectionView reloadItemsAtIndexPaths:@[[NSIndexPath indexPathForRow:oldSelected inSection:0], [NSIndexPath indexPathForRow:itemIndex inSection:0]]];
-    
 }
 
 @end
 
 
 #pragma mark - MGFashionPickerView class
-@interface MGFashionPickerView ()
+@interface MGFashionPickerView () <MGFashionPickerComponentViewDelegate>
 
 @end
 
@@ -301,6 +299,8 @@ static UIColor *selectionColor;
     CGFloat actualContentSizeHeight = 0.0;
     
     //Configure each component
+    arrayComponent_ = [NSMutableArray arrayWithCapacity:numberOfComponent];
+    
     for (NSUInteger i = 0; i < numberOfComponent; i++) {
         @autoreleasepool {
             MGFashionPickerComponentView *pickerComponent = [[MGFashionPickerComponentView alloc] initWithFrame:(CGRect){0, 0, scrollView_.frame.size.width, 0}];;
@@ -308,6 +308,7 @@ static UIColor *selectionColor;
             pickerComponent.componentHeight = (datasourceResponds.datasourceComponentHeight) ? [self.datasource pickerView:self heightForComponent:i] : kMGPickerViewComponentHeight;
             pickerComponent.itemWidth = (datasourceResponds.datasourceItemWidth) ? [self.datasource pickerView:self itemsWidthForComponent:i] : kMGPickerViewItemWidth;
             pickerComponent.title = (datasourceResponds.datasourceTitle) ? [self.datasource pickerView:self titleForComponent:i] : nil;
+            pickerComponent.delegate = self;
             
             for (NSUInteger o = 0; o < pickerComponent.numberOfItems; o++) {
                 [pickerComponent.itemsText addObject:[self.datasource pickerView:self textForItem:o forComponent:i]];
@@ -361,6 +362,16 @@ static UIColor *selectionColor;
 - (UIScrollView *)mainVerticalScrollView
 {
     return scrollView_;
+}
+
+#pragma mark - MGFashionPickerComponentView Delegate
+- (void)pickerComponentView:(MGFashionPickerComponentView *)componentView didSelectItem:(NSUInteger)item
+{
+    NSUInteger component = [arrayComponent_ indexOfObject:componentView];
+    
+    if ([self.delegate respondsToSelector:@selector(pickerView:didSelectItem:forComponent:)]) {
+        [self.delegate pickerView:self didSelectItem:item forComponent:component];
+    }
 }
 
 #warning - Implement backgroundColor, selectionColor, textColor (use a component object including title and collectionView)

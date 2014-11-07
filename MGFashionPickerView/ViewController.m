@@ -55,6 +55,10 @@
     return [NSString stringWithFormat:@"Title %lu", (unsigned long)component];
 }
 
+- (void)pickerView:(MGFashionPickerView *)pickerView didSelectItem:(NSUInteger)item forComponent:(NSUInteger)component
+{
+    NSLog(@"COMPONENT: %d; ITEM: %d", component, item);
+}
 
 - (void)didReceiveMemoryWarning {
     [super didReceiveMemoryWarning];
