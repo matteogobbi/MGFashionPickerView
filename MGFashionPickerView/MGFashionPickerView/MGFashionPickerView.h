@@ -10,31 +10,6 @@
 
 @class MGFashionPickerView, MGFashionPickerComponentView;
 
-#pragma mark - MGFashionPickerViewCell class
-@interface MGFashionPickerViewCell : UICollectionViewCell
-
-@property (strong, nonatomic, readonly) UILabel *label;
-
-@end
-
-
-#pragma mark - MGFashionPickerComponentView Delegate protocol
-@protocol MGFashionPickerComponentViewDelegate <NSObject>
-
-@optional
-- (void)pickerComponentView:(MGFashionPickerComponentView *)componentView didSelectItem:(NSUInteger)item;
-
-@end
-
-
-@interface MGFashionPickerComponentView : UIView
-
-@property (readonly) NSUInteger selectedItemIndex;
-
-@property (weak, nonatomic) id<MGFashionPickerComponentViewDelegate> delegate;
-
-@end
-
 #pragma mark - Delegate protocol
 @protocol MGFashionPickerViewDelegate <NSObject>
 
@@ -71,6 +46,7 @@
 
 - (instancetype)init __attribute__((unavailable("Use -initWithFrame: instead")));
 
+- (void)setItem:(NSUInteger)item forComponent:(NSUInteger)component animated:(BOOL)animated;
 - (void)reloadData;
 
 @end

@@ -12,14 +12,14 @@
 #define kMGPickerViewSelectionTextColor [UIColor blueColor]
 
 static const CGFloat kMGPickerViewItemWidth = 80.0;
-static const CGFloat kMGPickerViewComponentHeight = 40.0;
-static const CGFloat kMGPickerViewComponentTitleHeight = 25.0;
-static const CGFloat kMGPickerComponentMargin = 20.0;
+static const CGFloat kMGPickerViewComponentHeight = 30.0;
+static const CGFloat kMGPickerViewComponentTitleHeight = 20.0;
+static const CGFloat kMGPickerComponentMargin = 15.0;
 
-static const CGFloat kMGPickerViewTitleFontSize = 14.0;
+static const CGFloat kMGPickerViewTitleFontSize = 13.0;
 static NSString *const kMGPickerViewTitleFontName = @"HelveticaNeue";
 
-static const CGFloat kMGPickerViewCollectionTextFontSize = 17.0;
+static const CGFloat kMGPickerViewCollectionTextFontSize = 16.0;
 static NSString *const kMGPickerViewCollectionTextFontName = @"HelveticaNeue";
 static NSString *const kMGPickerViewCollectionSelectedTextFontName = @"HelveticaNeue-Bold";
 
@@ -31,10 +31,14 @@ static struct DatasourceResponds {
     unsigned int datasourceItemWidth:1;
 } datasourceResponds;
 
+static struct DelegateResponds {
+    unsigned int delegateDidSelect;
+} delegateResponds;
+
 static UIColor *selectionColor;
 
 #pragma mark - MGFashionPickerViewCell class
-@interface MGFashionPickerViewCell ()
+@interface MGFashionPickerViewCell : UICollectionViewCell
 
 @property (strong, nonatomic) UILabel *label;
 
@@ -70,12 +74,24 @@ static UIColor *selectionColor;
 
 @end
 
+
+#pragma mark - MGFashionPickerComponentView Delegate protocol
+@protocol MGFashionPickerComponentViewDelegate <NSObject>
+
+@optional
+- (void)pickerComponentView:(MGFashionPickerComponentView *)componentView didSelectItem:(NSUInteger)item;
+
+@end
+
 #pragma mark - MGFashionPickerComponent class
-@interface MGFashionPickerComponentView () <UICollectionViewDataSource, UICollectionViewDelegate>
-{
+@interface MGFashionPickerComponentView : UIView <UICollectionViewDataSource, UICollectionViewDelegate> {
 @private
     UILabel *label_;
 }
+
+@property (readonly) NSInteger selectedItemIndex;
+
+@property (weak, nonatomic) id<MGFashionPickerComponentViewDelegate> delegate;
 
 @property (strong, nonatomic) UICollectionView *collectionView;
 @property (copy, nonatomic) NSString *title;
@@ -84,15 +100,20 @@ static UIColor *selectionColor;
 @property CGFloat itemWidth;
 @property NSUInteger numberOfItems;
 
+- (void)selectItem:(NSUInteger)item;
+
 @end
 
-@implementation MGFashionPickerComponentView
+@implementation MGFashionPickerComponentView {
+    NSUInteger oldSelected_;
+}
 
 - (instancetype)initWithFrame:(CGRect)frame
 {
     self = [super initWithFrame:frame];
     if (self) {
         _itemsText = [NSMutableArray new];
+        _selectedItemIndex = 0;
     }
     return self;
 }
@@ -112,7 +133,7 @@ static UIColor *selectionColor;
         
         componentViewHeight += label_.frame.size.height;
     }
-
+    
     //Create the collectionView
     CGRect collectionViewRect = (CGRect){0.0, componentViewHeight, self.frame.size.width, _componentHeight};
     
@@ -190,12 +211,17 @@ static UIColor *selectionColor;
 }
 
 - (void)scrollViewWillBeginDragging:(UIScrollView *)scrollView {
-
+    
 }
 
 - (void)scrollViewDidEndDecelerating:(UIScrollView *)scrollView {
     //Center value
     [self mg_centerValueForScrollView:scrollView];
+}
+
+- (void)scrollViewDidEndScrollingAnimation:(UIScrollView *)scrollView
+{
+    
 }
 
 #pragma mark - Private methods scrollView selection
@@ -216,28 +242,29 @@ static UIColor *selectionColor;
     
     newOffset -= scrollView.contentInset.left;
     
-    [CATransaction begin];
-    
-    [CATransaction setCompletionBlock:^{
-        //Highlight the cell
-        [self mg_highlightItemAtIndex:itemIndex];
-        
-        if ([self.delegate respondsToSelector:@selector(pickerComponentView:didSelectItem:)]) {
-            [self.delegate pickerComponentView:self didSelectItem:itemIndex];
-        }
-    }];
-    
     [scrollView setContentOffset:CGPointMake(newOffset, 0.0) animated:YES];
     
-    [CATransaction commit];
+    [self mg_selectItem:itemIndex];
 }
 
-//Highlight a cell (dehiglighting the last one as well)
-- (void)mg_highlightItemAtIndex:(NSUInteger)itemIndex {
-    NSUInteger oldSelected = _selectedItemIndex;
-    _selectedItemIndex = itemIndex;
+- (void)mg_selectItem:(NSUInteger)item
+{
+    oldSelected_ = _selectedItemIndex;
+    _selectedItemIndex = item;
     
-    [_collectionView reloadItemsAtIndexPaths:@[[NSIndexPath indexPathForRow:oldSelected inSection:0], [NSIndexPath indexPathForRow:itemIndex inSection:0]]];
+    [_collectionView reloadItemsAtIndexPaths:[_collectionView indexPathsForVisibleItems]];
+    
+    if ([self.delegate respondsToSelector:@selector(pickerComponentView:didSelectItem:)]) {
+        [self.delegate pickerComponentView:self didSelectItem:_selectedItemIndex];
+    }
+}
+
+#pragma mark - Public methods scrollView selection
+- (void)selectItem:(NSUInteger)item {
+    CGFloat newOffset = -_collectionView.contentInset.left + _itemWidth*item;
+    [_collectionView setContentOffset:CGPointMake(newOffset, 0.0) animated:YES];
+    
+    [self mg_selectItem:item];
 }
 
 @end
@@ -276,6 +303,15 @@ static UIColor *selectionColor;
         datasourceResponds.datasourceTitle = [_datasource respondsToSelector:@selector(pickerView:titleForComponent:)];
         datasourceResponds.datasourceItemWidth = [_datasource respondsToSelector:@selector(pickerView:itemsWidthForComponent:)];
         datasourceResponds.datasourceComponentHeight = [_datasource respondsToSelector:@selector(pickerView:heightForComponent:)];
+    }
+}
+
+- (void)setDelegate:(id<MGFashionPickerViewDelegate>)delegate
+{
+    if (_delegate != delegate) {
+        _delegate = delegate;
+        
+        delegateResponds.delegateDidSelect = [self.delegate respondsToSelector:@selector(pickerView:didSelectItem:forComponent:)];
     }
 }
 
@@ -325,7 +361,14 @@ static UIColor *selectionColor;
             actualContentSizeHeight += pickerComponent.frame.size.height + ((i == numberOfComponent-1) ? .0 : kMGPickerComponentMargin);
         }
     }
-
+    
+    //Call the did select
+    for (NSUInteger i = 0; i < numberOfComponent; i++) {
+        if (delegateResponds.delegateDidSelect) {
+            [self.delegate pickerView:self didSelectItem:0 forComponent:i];
+        }
+    }
+    
     //Set the scrollView content size
     scrollView_.contentSize = (CGSize){scrollView_.frame.size.width, actualContentSizeHeight};
 }
@@ -366,12 +409,18 @@ static UIColor *selectionColor;
     return scrollView_;
 }
 
+- (void)setItem:(NSUInteger)item forComponent:(NSUInteger)component animated:(BOOL)animated
+{
+    MGFashionPickerComponentView *componentView = arrayComponent_[component];
+    [componentView selectItem:item];
+}
+
 #pragma mark - MGFashionPickerComponentView Delegate
 - (void)pickerComponentView:(MGFashionPickerComponentView *)componentView didSelectItem:(NSUInteger)item
 {
     NSUInteger component = [arrayComponent_ indexOfObject:componentView];
     
-    if ([self.delegate respondsToSelector:@selector(pickerView:didSelectItem:forComponent:)]) {
+    if (delegateResponds.delegateDidSelect) {
         [self.delegate pickerView:self didSelectItem:item forComponent:component];
     }
 }

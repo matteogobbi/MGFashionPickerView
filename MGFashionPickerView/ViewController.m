@@ -57,7 +57,7 @@
 
 - (void)pickerView:(MGFashionPickerView *)pickerView didSelectItem:(NSUInteger)item forComponent:(NSUInteger)component
 {
-    NSLog(@"COMPONENT: %d; ITEM: %d", component, item);
+    NSLog(@"COMPONENT: %lu; ITEM: %lu", (unsigned long)component, (unsigned long)item);
 }
 
 - (void)didReceiveMemoryWarning {
