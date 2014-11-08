@@ -8,26 +8,12 @@
 
 #import <UIKit/UIKit.h>
 
-@class MGFashionPickerView;
-
-#pragma mark - MGFashionPickerViewCell class
-@interface MGFashionPickerViewCell : UICollectionViewCell
-
-@property (strong, nonatomic, readonly) UILabel *label;
-
-@end
-
-#pragma mark - MGFashionPickerComponent class
-@interface MGFashionPickerComponent : NSObject
-
-@end
+@class MGFashionPickerView, MGFashionPickerComponentView;
 
 #pragma mark - Delegate protocol
 @protocol MGFashionPickerViewDelegate <NSObject>
 
 @optional
-- (void)pickerView:(MGFashionPickerView *)pickerView componentDidEndDragging:(NSUInteger)component willDecelerate:(BOOL)decelerate;
-- (void)pickerView:(MGFashionPickerView *)pickerView componentWillBeginDragging:(NSUInteger)component;
 - (void)pickerView:(MGFashionPickerView *)pickerView didSelectItem:(NSUInteger)item forComponent:(NSUInteger)component;
 
 @end
@@ -60,6 +46,7 @@
 
 - (instancetype)init __attribute__((unavailable("Use -initWithFrame: instead")));
 
+- (void)setItem:(NSUInteger)item forComponent:(NSUInteger)component animated:(BOOL)animated;
 - (void)reloadData;
 
 @end
