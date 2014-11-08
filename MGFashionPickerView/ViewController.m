@@ -21,7 +21,7 @@
     [super viewDidLoad];
     // Do any additional setup after loading the view, typically from a nib.
     
-    fashionPicker = [[MGFashionPickerView alloc] initWithFrame:CGRectMake(0, 250, self.view.bounds.size.width, self.view.bounds.size.height-250.0)];
+    fashionPicker = [[MGFashionPickerView alloc] initWithFrame:CGRectMake(0, 400, self.view.bounds.size.width, self.view.bounds.size.height-400.0)];
     fashionPicker.datasource = self;
     fashionPicker.delegate = self;
     [self.view addSubview:fashionPicker];
@@ -45,19 +45,122 @@
     return 10;
 }
 
-- (NSString *)pickerView:(MGFashionPickerView *)pickerView textForItem:(NSInteger)Item forComponent:(NSInteger)component
+- (NSString *)pickerView:(MGFashionPickerView *)pickerView textForItem:(NSInteger)item forComponent:(NSInteger)component
 {
-    return @"Text";
+    NSString *value = @"";
+    
+    switch (component) {
+        case 0:
+            
+            value = [NSString stringWithFormat:@"%ld", 18+item];
+            break;
+            
+        case 1:
+            switch (item) {
+                case 0:
+                    
+                    value = @"Italy";
+                    break;
+                
+                case 1:
+                    
+                    value = @"UK";
+                    break;
+                    
+                case 2:
+                    
+                    value = @"USA";
+                    break;
+                    
+                case 3:
+                    
+                    value = @"Australia";
+                    break;
+                    
+                case 4:
+                    
+                    value = @"Germany";
+                    break;
+                    
+                default:
+                    value = @"value";
+                    break;
+            }
+            
+            break;
+        
+        case 2:
+            switch (item) {
+                case 0:
+                    
+                    value = @"Italian";
+                    break;
+                    
+                case 1:
+                    
+                    value = @"English";
+                    break;
+                    
+                case 2:
+                    
+                    value = @"French";
+                    break;
+                    
+                case 3:
+                    
+                    value = @"Spanish";
+                    break;
+                    
+                case 4:
+                    
+                    value = @"Portoguese";
+                    break;
+                    
+                default:
+                    value = @"value";
+                    break;
+            }
+            
+            break;
+            
+        default:
+            value = @"value";
+            break;
+    }
+    
+    return value;
 }
 
 - (NSString *)pickerView:(MGFashionPickerView *)pickerView titleForComponent:(NSUInteger)component
 {
-    return [NSString stringWithFormat:@"Title %lu", (unsigned long)component];
+    NSString *value = @"";
+    
+    switch (component) {
+        case 0:
+            value = @"Age";
+            break;
+        case 1:
+            value = @"From";
+            break;
+        case 2:
+            value = @"Language";
+            break;
+        default:
+            value = @"Title";
+            break;
+    }
+    
+    return value;
 }
 
 - (void)pickerView:(MGFashionPickerView *)pickerView didSelectItem:(NSUInteger)item forComponent:(NSUInteger)component
 {
     NSLog(@"COMPONENT: %lu; ITEM: %lu", (unsigned long)component, (unsigned long)item);
+}
+
+- (UIColor *)selectionColorForPickerView:(MGFashionPickerView *)pickerView
+{
+    return [UIColor colorWithRed:62.0/255.0 green:116.0/255.0 blue:1.0 alpha:1.0];
 }
 
 - (void)didReceiveMemoryWarning {
