@@ -100,7 +100,7 @@ static UIColor *selectionColor;
 @property CGFloat itemWidth;
 @property NSUInteger numberOfItems;
 
-- (void)selectItem:(NSUInteger)item;
+- (void)selectItem:(NSUInteger)item animated:(BOOL)animated;
 
 @end
 
@@ -260,9 +260,10 @@ static UIColor *selectionColor;
 }
 
 #pragma mark - Public methods scrollView selection
-- (void)selectItem:(NSUInteger)item {
+- (void)selectItem:(NSUInteger)item animated:(BOOL)animated
+{
     CGFloat newOffset = -_collectionView.contentInset.left + _itemWidth*item;
-    [_collectionView setContentOffset:CGPointMake(newOffset, 0.0) animated:YES];
+    [_collectionView setContentOffset:CGPointMake(newOffset, 0.0) animated:animated];
     
     [self mg_selectItem:item];
 }
@@ -412,7 +413,7 @@ static UIColor *selectionColor;
 - (void)setItem:(NSUInteger)item forComponent:(NSUInteger)component animated:(BOOL)animated
 {
     MGFashionPickerComponentView *componentView = arrayComponent_[component];
-    [componentView selectItem:item];
+    [componentView selectItem:item animated:animated];
 }
 
 #pragma mark - MGFashionPickerComponentView Delegate
